@@ -1,0 +1,10 @@
+{
+  "name": "nightfall-arena",
+  "version": "1.0.0",
+  "description": "Local static server for the Nightfall Arena browser game.",
+  "license": "MIT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

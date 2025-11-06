@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nightfall Arena – Golbus The Gaurdian</title>
+    <style>
+        :root {
+            --bg: #040507;
+            --bg-soft: #090d15;
+            --glow: #3d9cff;
+            --glow-soft: rgba(61, 156, 255, 0.35);
+            --accent: #f05f40;
+            --accent-strong: #ff9166;
+            --text: #f8f9fb;
+            --muted: #9aa4c1;
+            --danger: #ff3b53;
+            --danger-soft: rgba(255, 59, 83, 0.35);
+            --success: #8bd750;
+            font-family: "Segoe UI", "Poppins", system-ui, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 20%, rgba(61, 156, 255, 0.15), transparent 55%),
+                radial-gradient(circle at 80% 0%, rgba(240, 95, 64, 0.22), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            padding: clamp(16px, 2vw, 40px);
+        }
+
+        main {
+            width: min(1160px, 100%);
+            background: linear-gradient(145deg, rgba(8, 12, 20, 0.94), rgba(3, 4, 8, 0.96));
+            border: 1px solid rgba(61, 156, 255, 0.18);
+            border-radius: 26px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+            padding: clamp(18px, 3vw, 32px);
+            display: grid;
+            gap: clamp(18px, 3vw, 32px);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            max-width: 60ch;
+            line-height: 1.6;
+        }
+
+        #hud {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: clamp(12px, 2.5vw, 18px);
+            align-items: end;
+        }
+
+        .bar {
+            display: grid;
+            gap: 8px;
+        }
+
+        .bar label {
+            font-size: 0.75rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(154, 164, 193, 0.8);
+        }
+
+        .bar .track {
+            position: relative;
+            height: 18px;
+            border-radius: 999px;
+            background: rgba(33, 40, 60, 0.8);
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .bar .fill {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            transition: width 0.3s ease;
+        }
+
+        #boss-health-fill {
+            background: linear-gradient(90deg, rgba(240, 95, 64, 0.25), rgba(240, 95, 64, 0.75));
+            box-shadow: 0 0 16px rgba(240, 95, 64, 0.4);
+        }
+
+        #player-health-fill {
+            background: linear-gradient(90deg, rgba(61, 156, 255, 0.25), rgba(61, 156, 255, 0.85));
+            box-shadow: 0 0 16px rgba(61, 156, 255, 0.4);
+        }
+
+        #bomb-info {
+            display: grid;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: rgba(248, 249, 251, 0.88);
+        }
+
+        #bomb-info strong {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            color: rgba(240, 95, 64, 0.75);
+        }
+
+        canvas {
+            width: 100%;
+            border-radius: 24px;
+            background: radial-gradient(circle at center, rgba(12, 18, 28, 0.95), rgba(4, 5, 9, 0.9));
+            border: 1px solid rgba(61, 156, 255, 0.16);
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+            aspect-ratio: 16 / 9;
+        }
+
+        #guide {
+            background: rgba(9, 13, 22, 0.85);
+            border-radius: 18px;
+            border: 1px solid rgba(61, 156, 255, 0.12);
+            padding: clamp(16px, 3vw, 24px);
+            line-height: 1.7;
+            color: rgba(200, 207, 229, 0.92);
+        }
+
+        #guide h2 {
+            margin: 0 0 10px;
+            font-size: 1.25rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(248, 249, 251, 0.85);
+        }
+
+        #guide ul {
+            margin: 0;
+            padding: 0 0 0 1.1rem;
+            display: grid;
+            gap: 8px;
+        }
+
+        #guide li {
+            position: relative;
+        }
+
+        button.cta,
+        a.cta {
+            justify-self: center;
+            border: none;
+            border-radius: 999px;
+            padding: 0.85rem 2.4rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            font-weight: 600;
+            color: #0a1019;
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            cursor: pointer;
+            box-shadow: 0 16px 36px rgba(240, 95, 64, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        button.cta:hover,
+        button.cta:focus-visible,
+        a.cta:hover,
+        a.cta:focus-visible {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 22px 46px rgba(240, 95, 64, 0.45);
+            outline: none;
+        }
+
+        button.cta:active,
+        a.cta:active {
+            transform: translateY(0) scale(0.99);
+            box-shadow: 0 12px 24px rgba(240, 95, 64, 0.35);
+        }
+
+        header .share-link {
+            margin: 16px 0 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: rgba(200, 207, 229, 0.76);
+        }
+
+        header .share-link a {
+            color: var(--accent-strong);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        header .share-link a:hover,
+        header .share-link a:focus-visible {
+            text-decoration: underline;
+            outline: none;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(4, 5, 7, 0.78);
+            backdrop-filter: blur(6px);
+            border-radius: inherit;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #overlay[aria-hidden="false"] {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #overlay .panel {
+            display: grid;
+            gap: 18px;
+            text-align: center;
+            padding: 32px clamp(24px, 6vw, 48px);
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(9, 13, 23, 0.92), rgba(4, 5, 9, 0.92));
+            border: 1px solid rgba(61, 156, 255, 0.18);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        #overlay h2 {
+            margin: 0;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        #overlay p {
+            margin: 0;
+            line-height: 1.7;
+            color: rgba(200, 207, 229, 0.94);
+        }
+
+        #overlay .stats {
+            font-family: "Jetbrains Mono", "Fira Code", monospace;
+            font-size: 0.95rem;
+            color: rgba(248, 249, 251, 0.85);
+        }
+
+        .screen-wrapper {
+            position: relative;
+        }
+
+        #toast {
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%) translateY(40px);
+            padding: 12px 20px;
+            border-radius: 999px;
+            background: rgba(9, 13, 22, 0.88);
+            border: 1px solid rgba(61, 156, 255, 0.18);
+            color: rgba(248, 249, 251, 0.88);
+            font-size: 0.9rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        #toast[data-visible="true"] {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 860px) {
+            header p {
+                max-width: none;
+            }
+            canvas {
+                aspect-ratio: 4 / 3;
+            }
+            #hud {
+                grid-template-columns: 1fr;
+            }
+            #guide {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Nightfall Arena: Golbus The Gaurdian</h1>
+            <p>Endure the relentless blitz of Golbus, a spined sentinel with twin razored claws who never relents. Gather volatile bombs, trigger them at point-blank range, and shatter the creature's essence before it claims your soul.</p>
+            <a class="cta" href="#arena">Jump Into The Arena</a>
+            <div class="share-link" role="note">
+                <span>Share this adventure:</span>
+                <a href="http://localhost:4173" target="_blank" rel="noopener">http://localhost:4173</a>
+            </div>
+        </header>
+
+        <section id="hud" aria-live="polite">
+                            <div class="bar" aria-label="Golbus health">
+                                <label for="boss-health-fill">Golbus Vitality</label>
+                <div class="track" aria-hidden="true">
+                    <div id="boss-health-fill" class="fill" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="bar" aria-label="Hunter health">
+                <label for="player-health-fill">Hunter Vitality</label>
+                <div class="track" aria-hidden="true">
+                    <div id="player-health-fill" class="fill" style="width: 100%"></div>
+                </div>
+            </div>
+            <div id="bomb-info">
+                <strong>Bomb Cycle</strong>
+                <span id="bomb-status">Awaiting the next omen...</span>
+            </div>
+        </section>
+
+        <div class="screen-wrapper">
+            <canvas id="arena" width="960" height="540" role="img" aria-label="Battlefield"></canvas>
+            <div id="overlay" aria-hidden="true">
+                <div class="panel" role="alertdialog" aria-modal="true">
+                      <h2 id="overlay-title">The Guardian Stands...</h2>
+                      <p id="overlay-message">Survive long enough to detonate a bomb near Golbus.</p>
+                    <p class="stats" id="overlay-stats"></p>
+                    <button id="overlay-action" class="cta" type="button">Rise Again</button>
+                </div>
+            </div>
+            <div id="toast" role="status" aria-live="polite"></div>
+        </div>
+
+        <section id="guide" aria-label="How to play">
+            <h2>Hunt Tactics</h2>
+            <ul>
+                <li>Move with <strong>WASD</strong> or the <strong>arrow keys</strong>. Hold <strong>Shift</strong> to sprint.</li>
+            <li>Bombs manifest every 10 seconds with a <strong>50% chance</strong>. Brush against one as it streaks past to trigger the blast.</li>
+        <li>Golbus cycles through unexpected assaults: claw dives, shard volleys, and shadow eruptions—all faster than before.</li>
+            <li>Keep your distance, kite the strikes, and line up bomb blasts to pierce its reinforced plating.</li>
+            </ul>
+        </section>
+    </main>
+
+    <script>
+        const canvas = document.getElementById("arena");
+        const ctx = canvas.getContext("2d");
+        const bossHealthFill = document.getElementById("boss-health-fill");
+        const playerHealthFill = document.getElementById("player-health-fill");
+        const bombStatus = document.getElementById("bomb-status");
+        const overlay = document.getElementById("overlay");
+        const overlayTitle = document.getElementById("overlay-title");
+        const overlayMessage = document.getElementById("overlay-message");
+        const overlayStats = document.getElementById("overlay-stats");
+        const overlayAction = document.getElementById("overlay-action");
+        const toast = document.getElementById("toast");
+
+        const keys = new Set();
+        const bombs = [];
+        const projectiles = [];
+        const hazards = [];
+        const explosions = [];
+
+        const ARENA_PADDING = 70;
+        const BOMB_INTERVAL = 10000;
+        const BOMB_DAMAGE = 30;
+        const BOMB_TRIGGER_RADIUS = 80;
+        const BOMB_EXPLOSION_RADIUS = 150;
+
+        const player = {
+            x: canvas.width * 0.5,
+            y: canvas.height - 120,
+            radius: 18,
+            baseSpeed: 210,
+            runMultiplier: 1.65,
+            health: 100,
+            maxHealth: 100,
+            invulnerable: 0,
+            hitsTaken: 0
+        };
+
+                const enemy = {
+                x: canvas.width * 0.5,
+                y: canvas.height * 0.4,
+                width: 48,
+                height: 170,
+                health: 120,
+                maxHealth: 120,
+                state: "idle",
+                stateTimer: 1400,
+                attackCooldown: 1800,
+                pendingAttack: null,
+                velocityX: 0,
+                velocityY: 0,
+                lungeTime: 0,
+                        clawLength: 130,
+                        clawWidth: 18,
+                        clawSwing: 0,
+                        clawExtended: 0,
+                        clawStrikeDone: false
+            };
+
+        let lastTime = performance.now();
+        let elapsedTime = 0;
+        let bombTimer = 0;
+        let bombRolls = 0;
+        let bombsTriggered = 0;
+        let gameState = "running"; // running | victory | defeat
+
+        const randomRange = (min, max) => Math.random() * (max - min) + min;
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+        function resizeCanvas() {
+            const width = Math.min(window.innerWidth - 48, 1200);
+            const height = Math.min(window.innerHeight - 220, 740);
+            const targetWidth = Math.max(720, width);
+            const targetHeight = Math.max(520, height);
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        function resetGame() {
+            player.x = canvas.width * 0.5;
+            player.y = canvas.height - 120;
+            player.health = player.maxHealth;
+            player.invulnerable = 0;
+            player.hitsTaken = 0;
+
+            enemy.x = canvas.width * 0.5;
+            enemy.y = canvas.height * 0.38;
+            enemy.health = enemy.maxHealth;
+            enemy.state = "idle";
+            enemy.stateTimer = 950;
+            enemy.attackCooldown = 1400;
+            enemy.pendingAttack = null;
+            enemy.velocityX = 0;
+            enemy.velocityY = 0;
+            enemy.lungeTime = 0;
+            enemy.clawSwing = 0;
+            enemy.clawExtended = 0;
+            enemy.clawStrikeDone = false;
+
+            bombs.length = 0;
+            projectiles.length = 0;
+            hazards.length = 0;
+            explosions.length = 0;
+
+            elapsedTime = 0;
+            bombTimer = 2000; // first roll sooner to get the action going
+            bombRolls = 0;
+            bombsTriggered = 0;
+            gameState = "running";
+
+            overlay.setAttribute("aria-hidden", "true");
+            overlayStats.textContent = "";
+            updateHealthUI();
+            setBombStatus("Awaiting the next omen...");
+            showToast("The hunt resumes.");
+        }
+
+        overlayAction.addEventListener("click", resetGame);
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        }
+
+        function updateHealthUI() {
+            const bossPercent = (enemy.health / enemy.maxHealth) * 100;
+            const playerPercent = (player.health / player.maxHealth) * 100;
+            bossHealthFill.style.width = `${clamp(bossPercent, 0, 100)}%`;
+            playerHealthFill.style.width = `${clamp(playerPercent, 0, 100)}%`;
+        }
+
+        function setBombStatus(message) {
+            bombStatus.textContent = message;
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.setAttribute("data-visible", "true");
+            window.setTimeout(() => {
+                toast.setAttribute("data-visible", "false");
+            }, 1600);
+        }
+
+        function spawnBomb() {
+            const marginX = ARENA_PADDING + 40;
+            const marginY = ARENA_PADDING + 40;
+            const x = randomRange(marginX, canvas.width - marginX);
+            const y = randomRange(marginY, canvas.height - marginY);
+                const angle = Math.random() * Math.PI * 2;
+                const speed = randomRange(220, 320);
+            bombs.push({
+                x,
+                y,
+                radius: 20,
+                pulse: 0,
+                            armed: true,
+                            remove: false,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed
+            });
+                setBombStatus("A volatile bomb streaks through the arena! Touch it to detonate.");
+            showToast("Bomb manifested.");
+        }
+
+        function attemptBombRoll() {
+            bombRolls += 1;
+            if (Math.random() < 0.5) {
+                spawnBomb();
+            } else {
+                setBombStatus("The omen fizzled. Await another 10 seconds...");
+            }
+        }
+
+        function attemptBombActivation() {
+            if (gameState !== "running") return;
+            let nearest = null;
+            let nearestDist = Infinity;
+            for (const bomb of bombs) {
+                if (!bomb.armed) continue;
+                const dist = Math.hypot(bomb.x - player.x, bomb.y - player.y);
+                if (dist < nearestDist) {
+                    nearest = bomb;
+                    nearestDist = dist;
+                }
+            }
+                    if (nearest && nearestDist <= BOMB_TRIGGER_RADIUS) {
+                triggerBomb(nearest);
+            } else {
+                        showToast("Wait for a bomb to cross your path.");
+            }
+        }
+
+        function triggerBomb(bomb) {
+            bomb.armed = false;
+                bomb.remove = true;
+                bomb.vx = 0;
+                bomb.vy = 0;
+            bombsTriggered += 1;
+            explosions.push({
+                x: bomb.x,
+                y: bomb.y,
+                radius: 0,
+                maxRadius: BOMB_EXPLOSION_RADIUS,
+                life: 420,
+                elapsed: 0
+            });
+            showToast("Bomb detonated!");
+            setBombStatus("The blast echoes... wait for the next omen.");
+            const enemyDistance = Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y);
+            if (enemyDistance <= BOMB_EXPLOSION_RADIUS + enemy.height * 0.35) {
+                damageEnemy(BOMB_DAMAGE);
+            }
+        }
+
+        function damageEnemy(amount) {
+            enemy.health = Math.max(0, enemy.health - amount);
+            updateHealthUI();
+            if (enemy.health <= 0) {
+                triggerVictory();
+            } else {
+                showToast("Golbus reels.");
+            }
+        }
+
+        function damagePlayer(amount) {
+            if (player.invulnerable > 0 || gameState !== "running") return;
+            player.health = Math.max(0, player.health - amount);
+            player.invulnerable = 900;
+            player.hitsTaken += 1;
+            updateHealthUI();
+            showToast("You are struck!");
+            if (player.health <= 0) {
+                triggerDefeat();
+            }
+        }
+
+        function triggerVictory() {
+            gameState = "victory";
+            overlayTitle.textContent = "Golbus Topples";
+            overlayMessage.textContent = "Your calculated detonations shattered the guardian's carapace.";
+            overlayStats.textContent = `Bomb hits: ${bombsTriggered} • Time survived: ${formatTime(elapsedTime)} • Wounds taken: ${player.hitsTaken}`;
+            overlayAction.textContent = "Challenge Again";
+            overlay.setAttribute("aria-hidden", "false");
+            setBombStatus("Silence. The arena rests.");
+        }
+
+        function triggerDefeat() {
+            gameState = "defeat";
+            overlayTitle.textContent = "You Succumbed";
+            overlayMessage.textContent = "Golbus's claws shredded your guard. Rise and adapt your tactics.";
+            overlayStats.textContent = `Bomb attempts: ${bombRolls} • Bombs detonated: ${bombsTriggered} • Time fought: ${formatTime(elapsedTime)}`;
+            overlayAction.textContent = "Rise Again";
+            overlay.setAttribute("aria-hidden", "false");
+            setBombStatus("The arena claims another soul...");
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                event.preventDefault();
+            }
+            keys.add(event.code);
+            if (event.code === "Space" && !event.repeat) {
+                attemptBombActivation();
+            }
+        });
+
+        document.addEventListener("keyup", (event) => {
+            keys.delete(event.code);
+        });
+
+        function updatePlayer(delta) {
+            const deltaSeconds = delta / 1000;
+            let moveX = 0;
+            let moveY = 0;
+            if (keys.has("KeyW") || keys.has("ArrowUp")) moveY -= 1;
+            if (keys.has("KeyS") || keys.has("ArrowDown")) moveY += 1;
+            if (keys.has("KeyA") || keys.has("ArrowLeft")) moveX -= 1;
+            if (keys.has("KeyD") || keys.has("ArrowRight")) moveX += 1;
+
+            const magnitude = Math.hypot(moveX, moveY);
+            if (magnitude > 0) {
+                moveX /= magnitude;
+                moveY /= magnitude;
+            }
+
+            const running = keys.has("ShiftLeft") || keys.has("ShiftRight");
+            const speed = player.baseSpeed * (running ? player.runMultiplier : 1);
+            player.x += moveX * speed * deltaSeconds;
+            player.y += moveY * speed * deltaSeconds;
+
+            player.x = clamp(player.x, ARENA_PADDING, canvas.width - ARENA_PADDING);
+            player.y = clamp(player.y, ARENA_PADDING, canvas.height - ARENA_PADDING);
+
+            if (player.invulnerable > 0) {
+                player.invulnerable = Math.max(0, player.invulnerable - delta);
+            }
+        }
+
+        function updateEnemy(delta) {
+            const deltaSeconds = delta / 1000;
+            const toPlayerX = player.x - enemy.x;
+            const toPlayerY = player.y - enemy.y;
+            const distanceToPlayer = Math.hypot(toPlayerX, toPlayerY);
+
+                enemy.clawSwing += delta * 0.007;
+                if (enemy.state !== "claw") {
+                    enemy.clawExtended = Math.max(0, enemy.clawExtended - delta * 0.0025);
+                }
+
+            if (enemy.state === "idle") {
+                    enemy.attackCooldown -= delta;
+                if (enemy.attackCooldown <= 0) {
+                    selectEnemyAttack();
+                } else {
+                                const drift = clamp(distanceToPlayer - 160, -90, 150);
+                                enemy.x += (toPlayerX / (distanceToPlayer || 1)) * drift * 0.85 * deltaSeconds;
+                                enemy.y += (toPlayerY / (distanceToPlayer || 1)) * drift * 0.68 * deltaSeconds;
+                }
+            } else if (enemy.state === "telegraph") {
+                enemy.stateTimer -= delta;
+                    if (enemy.pendingAttack === "claw") {
+                        enemy.clawExtended = Math.min(0.8, enemy.clawExtended + delta * 0.0035);
+                    }
+                if (enemy.stateTimer <= 0) {
+                    executeEnemyAttack();
+                }
+                } else if (enemy.state === "lunging") {
+                enemy.lungeTime -= delta;
+                enemy.x += enemy.velocityX * deltaSeconds;
+                enemy.y += enemy.velocityY * deltaSeconds;
+                if (enemy.lungeTime <= 0) {
+                    enemy.state = "recover";
+                    enemy.stateTimer = 800;
+                    enemy.velocityX = 0;
+                    enemy.velocityY = 0;
+                }
+                if (distanceToPlayer < enemy.height * 0.35 + player.radius) {
+                    damagePlayer(30);
+                }
+                } else if (enemy.state === "claw") {
+                    enemy.stateTimer -= delta;
+                enemy.clawExtended = Math.min(1.3, enemy.clawExtended + delta * 0.0052);
+                if (!enemy.clawStrikeDone && enemy.stateTimer <= 360) {
+                        const len = distanceToPlayer || 1;
+                        const forwardX = toPlayerX / len;
+                        const forwardY = toPlayerY / len;
+                        const leftX = -forwardY;
+                        const leftY = forwardX;
+                          const extension = enemy.clawLength * (0.8 + enemy.clawExtended);
+                          const forwardOffset = 44;
+                          const checkRadius = 46;
+
+                        const baseX = enemy.x + forwardX * forwardOffset;
+                        const baseY = enemy.y + forwardY * forwardOffset;
+
+                        const leftTipX = baseX + leftX * extension;
+                        const leftTipY = baseY + leftY * extension;
+                        const rightTipX = baseX - leftX * extension;
+                        const rightTipY = baseY - leftY * extension;
+
+                        if (
+                            Math.hypot(player.x - leftTipX, player.y - leftTipY) <= checkRadius ||
+                            Math.hypot(player.x - rightTipX, player.y - rightTipY) <= checkRadius
+                        ) {
+                            damagePlayer(32);
+                            enemy.clawStrikeDone = true;
+                        }
+                    }
+                    if (enemy.stateTimer <= 0) {
+                          enemy.state = "recover";
+                          enemy.stateTimer = 640;
+                          enemy.clawExtended = 0.55;
+                    }
+            } else if (enemy.state === "recover") {
+                enemy.stateTimer -= delta;
+                if (enemy.stateTimer <= 0) {
+                    enemy.state = "idle";
+                          enemy.attackCooldown = randomRange(780, 1320);
+                        enemy.clawStrikeDone = false;
+                }
+            }
+
+            enemy.x = clamp(enemy.x, ARENA_PADDING + 12, canvas.width - ARENA_PADDING - 12);
+            enemy.y = clamp(enemy.y, ARENA_PADDING - 4, canvas.height - ARENA_PADDING + 12);
+
+            enemy.rotation = Math.atan2(toPlayerX, -toPlayerY);
+        }
+
+        function selectEnemyAttack() {
+                const attacks = ["lunge", "claw", "volley", "eruption"];
+                enemy.pendingAttack = attacks[Math.floor(Math.random() * attacks.length)];
+            enemy.state = "telegraph";
+                        if (enemy.pendingAttack === "lunge") {
+                            enemy.stateTimer = 420;
+                        } else if (enemy.pendingAttack === "claw") {
+                            enemy.stateTimer = 380;
+                        } else if (enemy.pendingAttack === "volley") {
+                            enemy.stateTimer = 540;
+                        } else {
+                            enemy.stateTimer = 600;
+                }
+                showToast(`Golbus coils for a ${enemy.pendingAttack}...`);
+        }
+
+            function executeEnemyAttack() {
+                        if (enemy.pendingAttack === "lunge") {
+                    const dirX = player.x - enemy.x;
+                    const dirY = player.y - enemy.y;
+                    const len = Math.hypot(dirX, dirY) || 1;
+                            const speed = 860;
+                    enemy.velocityX = (dirX / len) * speed;
+                    enemy.velocityY = (dirY / len) * speed;
+                            enemy.lungeTime = 360;
+                    enemy.state = "lunging";
+                } else if (enemy.pendingAttack === "claw") {
+                    enemy.state = "claw";
+                            enemy.stateTimer = 520;
+                    enemy.clawStrikeDone = false;
+                    enemy.clawExtended = 1;
+                } else if (enemy.pendingAttack === "volley") {
+                    fireProjectileVolley();
+                    enemy.state = "recover";
+                            enemy.stateTimer = 700;
+                } else if (enemy.pendingAttack === "eruption") {
+                    spawnShadowEruptions();
+                    enemy.state = "recover";
+                            enemy.stateTimer = 890;
+                } else {
+                    enemy.state = "idle";
+                            enemy.attackCooldown = randomRange(760, 1240);
+                }
+            enemy.pendingAttack = null;
+        }
+
+        function fireProjectileVolley() {
+                            const shots = 7;
+            for (let i = 0; i < shots; i += 1) {
+                        const aimX = player.x + randomRange(-60, 60);
+                        const aimY = player.y + randomRange(-60, 60);
+                const dirX = aimX - enemy.x;
+                const dirY = aimY - enemy.y;
+                const len = Math.hypot(dirX, dirY) || 1;
+                                const speed = randomRange(360, 440);
+                projectiles.push({
+                    x: enemy.x,
+                    y: enemy.y,
+                    vx: (dirX / len) * speed,
+                    vy: (dirY / len) * speed,
+                                    radius: randomRange(11, 17),
+                                    life: 4200,
+                    color: `rgba(${randomRange(200, 255)}, ${randomRange(60, 120)}, ${randomRange(120, 200)}, 0.9)`
+                });
+            }
+        }
+
+        function spawnShadowEruptions() {
+                            const count = 6;
+            for (let i = 0; i < count; i += 1) {
+                const offsetAngle = Math.random() * Math.PI * 2;
+                                const radius = randomRange(70, 150);
+                const x = clamp(player.x + Math.cos(offsetAngle) * radius, ARENA_PADDING, canvas.width - ARENA_PADDING);
+                const y = clamp(player.y + Math.sin(offsetAngle) * radius, ARENA_PADDING, canvas.height - ARENA_PADDING);
+                hazards.push({
+                    x,
+                    y,
+                                        radius: randomRange(58, 90),
+                                        telegraph: 460,
+                    active: false,
+                                        duration: 560
+                });
+            }
+        }
+
+        function updateBombs(delta) {
+                const deltaSeconds = delta / 1000;
+                let activeBombs = 0;
+                const minX = ARENA_PADDING + 30;
+                const maxX = canvas.width - ARENA_PADDING - 30;
+                const minY = ARENA_PADDING + 30;
+                const maxY = canvas.height - ARENA_PADDING - 30;
+
+                for (const bomb of bombs) {
+                    if (!bomb.armed) continue;
+                    activeBombs += 1;
+                    bomb.pulse += delta * 0.0065;
+                    bomb.x += bomb.vx * deltaSeconds;
+                    bomb.y += bomb.vy * deltaSeconds;
+
+                    if (bomb.x <= minX || bomb.x >= maxX) {
+                        bomb.x = clamp(bomb.x, minX, maxX);
+                        bomb.vx = -bomb.vx * 0.92 + randomRange(-55, 55);
+                    }
+                    if (bomb.y <= minY || bomb.y >= maxY) {
+                        bomb.y = clamp(bomb.y, minY, maxY);
+                        bomb.vy = -bomb.vy * 0.92 + randomRange(-55, 55);
+                    }
+
+                    const distToPlayer = Math.hypot(bomb.x - player.x, bomb.y - player.y);
+                    if (distToPlayer <= bomb.radius + player.radius + 8) {
+                        triggerBomb(bomb);
+                    }
+                }
+
+                for (let i = bombs.length - 1; i >= 0; i -= 1) {
+                    if (bombs[i].remove && explosions.every((exp) => Math.hypot(exp.x - bombs[i].x, exp.y - bombs[i].y) > 2)) {
+                        bombs.splice(i, 1);
+                    }
+                }
+
+                if (activeBombs === 0) {
+                    const remaining = BOMB_INTERVAL - bombTimer;
+                    if (gameState === "running") {
+                        setBombStatus(`Next omen in ${Math.max(0, Math.ceil(remaining / 1000))}s (50% chance).`);
+                    }
+                }
+        }
+
+        function updateProjectiles(delta) {
+            const deltaSeconds = delta / 1000;
+            for (let i = projectiles.length - 1; i >= 0; i -= 1) {
+                const proj = projectiles[i];
+                proj.x += proj.vx * deltaSeconds;
+                proj.y += proj.vy * deltaSeconds;
+            proj.vx *= 1.002;
+            proj.vy *= 1.002;
+                proj.life -= delta;
+                if (
+                    proj.life <= 0 ||
+                    proj.x < ARENA_PADDING - 40 ||
+                    proj.x > canvas.width - ARENA_PADDING + 40 ||
+                    proj.y < ARENA_PADDING - 40 ||
+                    proj.y > canvas.height - ARENA_PADDING + 40
+                ) {
+                    projectiles.splice(i, 1);
+                    continue;
+                }
+                const distance = Math.hypot(proj.x - player.x, proj.y - player.y);
+                if (distance <= proj.radius + player.radius) {
+                    projectiles.splice(i, 1);
+                    damagePlayer(20);
+                }
+            }
+        }
+
+        function updateHazards(delta) {
+            for (let i = hazards.length - 1; i >= 0; i -= 1) {
+                const hazard = hazards[i];
+                if (!hazard.active) {
+                    hazard.telegraph -= delta;
+                    if (hazard.telegraph <= 0) {
+                        hazard.active = true;
+                    }
+                } else {
+                    hazard.duration -= delta;
+                    if (hazard.duration <= 0) {
+                        hazards.splice(i, 1);
+                        continue;
+                    }
+                    if (Math.hypot(hazard.x - player.x, hazard.y - player.y) <= hazard.radius + player.radius - 6) {
+                        damagePlayer(25);
+                        hazards.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        function updateExplosions(delta) {
+            for (let i = explosions.length - 1; i >= 0; i -= 1) {
+                const explosion = explosions[i];
+                explosion.elapsed += delta;
+                explosion.radius = Math.min(
+                    explosion.maxRadius,
+                    (explosion.elapsed / explosion.life) * explosion.maxRadius
+                );
+                if (explosion.elapsed >= explosion.life) {
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+
+        function update(delta) {
+            if (gameState !== "running") {
+                updateExplosions(delta);
+                return;
+            }
+
+            elapsedTime += delta;
+            bombTimer += delta;
+            if (bombTimer >= BOMB_INTERVAL) {
+                bombTimer -= BOMB_INTERVAL;
+                attemptBombRoll();
+            }
+
+            updatePlayer(delta);
+            updateEnemy(delta);
+            updateBombs(delta);
+            updateProjectiles(delta);
+            updateHazards(delta);
+            updateExplosions(delta);
+
+            for (const bomb of bombs) {
+                if (!bomb.armed) continue;
+                const dist = Math.hypot(bomb.x - enemy.x, bomb.y - enemy.y);
+                if (dist < enemy.height * 0.3 + bomb.radius) {
+                    const dirX = (bomb.x - enemy.x) / (dist || 1);
+                    bomb.x += dirX * 6;
+                }
+            }
+        }
+
+        function drawArena() {
+            ctx.save();
+            ctx.fillStyle = ctx.createLinearGradient(0, ARENA_PADDING, 0, canvas.height - ARENA_PADDING);
+            const gradient = ctx.fillStyle;
+            if (gradient.addColorStop) {
+                gradient.addColorStop(0, "rgba(15, 20, 32, 0.95)");
+                gradient.addColorStop(1, "rgba(5, 8, 14, 0.92)");
+            }
+            ctx.fillRect(ARENA_PADDING, ARENA_PADDING, canvas.width - ARENA_PADDING * 2, canvas.height - ARENA_PADDING * 2);
+            ctx.strokeStyle = "rgba(61, 156, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(ARENA_PADDING, ARENA_PADDING, canvas.width - ARENA_PADDING * 2, canvas.height - ARENA_PADDING * 2);
+            ctx.restore();
+        }
+
+        function drawBombs(delta) {
+            for (const bomb of bombs) {
+                if (!bomb.armed) continue;
+                const pulse = Math.sin(bomb.pulse) * 0.4 + 0.6;
+                ctx.save();
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(240, 152, 66, ${0.5 + pulse * 0.3})`;
+                ctx.shadowColor = "rgba(240, 152, 66, 0.5)";
+                ctx.shadowBlur = 18;
+                ctx.arc(bomb.x, bomb.y, bomb.radius + pulse * 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "rgba(255, 210, 150, 0.9)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawHazards() {
+            for (const hazard of hazards) {
+                ctx.save();
+                ctx.beginPath();
+                if (!hazard.active) {
+                    const progress = clamp(1 - hazard.telegraph / 700, 0, 1);
+                    ctx.setLineDash([10, 8]);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = `rgba(255, 100, 120, ${0.2 + progress * 0.5})`;
+                    ctx.arc(hazard.x, hazard.y, hazard.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = "rgba(255, 64, 104, 0.55)";
+                    ctx.shadowColor = "rgba(255, 64, 104, 0.8)";
+                    ctx.shadowBlur = 22;
+                    ctx.arc(hazard.x, hazard.y, hazard.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function drawProjectiles() {
+            for (const proj of projectiles) {
+                ctx.save();
+                const trailGradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, proj.radius * 1.8);
+                trailGradient.addColorStop(0, proj.color);
+                trailGradient.addColorStop(1, "rgba(10, 15, 24, 0)");
+                ctx.fillStyle = trailGradient;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, proj.radius * 1.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawExplosions() {
+            for (const explosion of explosions) {
+                const alpha = clamp(1 - explosion.elapsed / explosion.life, 0, 1);
+                ctx.save();
+                const gradient = ctx.createRadialGradient(
+                    explosion.x,
+                    explosion.y,
+                    0,
+                    explosion.x,
+                    explosion.y,
+                    explosion.radius
+                );
+                gradient.addColorStop(0, `rgba(255, 196, 120, ${0.6 * alpha})`);
+                gradient.addColorStop(0.5, `rgba(255, 120, 60, ${0.4 * alpha})`);
+                gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawEnemy() {
+            ctx.save();
+            ctx.translate(enemy.x, enemy.y);
+            ctx.rotate(enemy.rotation || 0);
+            const gradient = ctx.createLinearGradient(-enemy.height * 0.5, 0, enemy.height * 0.5, 0);
+            gradient.addColorStop(0, "rgba(20, 24, 34, 0.95)");
+            gradient.addColorStop(0.5, "rgba(36, 40, 56, 0.95)");
+            gradient.addColorStop(1, "rgba(16, 20, 30, 0.95)");
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = "rgba(61, 156, 255, 0.3)";
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.roundRect(-enemy.width * 0.5, -enemy.height * 0.5, enemy.width, enemy.height, enemy.width * 0.35);
+            ctx.fill();
+
+                const swing = Math.sin(enemy.clawSwing) * (enemy.state === "claw" ? 0.7 : 0.35);
+                const extension = enemy.clawLength * (1 + Math.min(0.6, enemy.clawExtended));
+
+                function drawClaw(direction) {
+                    ctx.save();
+                    const offsetX = direction * (enemy.width * 0.62);
+                    const anchorY = enemy.height * 0.12;
+                    ctx.translate(offsetX, anchorY);
+                    ctx.rotate(direction * (Math.PI / 2 - swing));
+                    const clawGradient = ctx.createLinearGradient(0, 0, 0, extension);
+                    clawGradient.addColorStop(0, "rgba(240, 120, 90, 0.92)");
+                    clawGradient.addColorStop(1, "rgba(180, 40, 30, 0.85)");
+                    ctx.fillStyle = clawGradient;
+                    ctx.shadowColor = "rgba(240, 95, 64, 0.55)";
+                    ctx.shadowBlur = 12;
+                    ctx.beginPath();
+                    ctx.roundRect(-enemy.clawWidth * 0.5, 0, enemy.clawWidth, extension, enemy.clawWidth * 0.45);
+                    ctx.fill();
+
+                    ctx.fillStyle = "rgba(255, 220, 200, 0.9)";
+                    ctx.beginPath();
+                    ctx.ellipse(0, extension, enemy.clawWidth * 0.55, enemy.clawWidth * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                drawClaw(-1);
+                drawClaw(1);
+
+            ctx.fillStyle = "rgba(255, 120, 90, 0.85)";
+            ctx.beginPath();
+            ctx.ellipse(0, -enemy.height * 0.3, enemy.width * 0.3, enemy.width * 0.18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            const gradient = ctx.createRadialGradient(player.x, player.y, 6, player.x, player.y, player.radius * 1.4);
+            gradient.addColorStop(0, "rgba(61, 156, 255, 0.95)");
+            gradient.addColorStop(1, "rgba(14, 22, 36, 0.2)");
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = "rgba(61, 156, 255, 0.55)";
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            if (player.invulnerable > 0) {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius + 4, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function draw(delta) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawArena();
+            drawHazards();
+            drawBombs(delta);
+            drawProjectiles();
+            drawEnemy();
+            drawPlayer();
+            drawExplosions();
+
+            if (gameState !== "running") {
+                ctx.save();
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
+        }
+
+        function gameLoop(now) {
+            let delta = now - lastTime;
+            if (delta > 120) {
+                delta = 120; // clamp to avoid big jumps when tab is inactive
+            }
+            lastTime = now;
+            update(delta);
+            draw(delta);
+            requestAnimationFrame(gameLoop);
+        }
+
+        resetGame();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
+
