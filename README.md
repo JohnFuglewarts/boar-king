@@ -4,10 +4,20 @@ Dark Souls-inspired mini boss encounter built in vanilla HTML, CSS, and JavaScri
 
 ## How to play
 
+### Play Online
+Visit the live version here: [https://JohnFuglewarts.github.io/boar-king/](https://JohnFuglewarts.github.io/boar-king/)
+
+### Run Locally
 1. Install [Node.js](https://nodejs.org/) if you don’t already have it.
 2. In a terminal, change into this folder and run `npm start` to launch the local server.
 3. Visit [http://localhost:4173](http://localhost:4173) in your browser, click inside the window to lock focus, then dodge for dear life.
 4. Survive long enough for bombs to spawn; brush against a bomb as it streaks past to ignite it automatically.
+
+### Deployment
+To make the online link work:
+1. Go to your GitHub repository settings.
+2. Navigate to the **Pages** section.
+3. Select `main` branch as the source and save.
 
 ### Controls
 

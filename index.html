@@ -316,7 +316,7 @@
             <a class="cta" href="#arena">Jump Into The Arena</a>
             <div class="share-link" role="note">
                 <span>Share this adventure:</span>
-                <a href="http://localhost:4173" target="_blank" rel="noopener">http://localhost:4173</a>
+                <a href="https://JohnFuglewarts.github.io/boar-king/" target="_blank" rel="noopener">https://JohnFuglewarts.github.io/boar-king/</a>
             </div>
         </header>
 
@@ -375,6 +375,15 @@
         const overlayStats = document.getElementById("overlay-stats");
         const overlayAction = document.getElementById("overlay-action");
         const toast = document.getElementById("toast");
+
+        const playerSprite = new Image();
+        playerSprite.src = "img/AAGGGHGGHH.png";
+
+        const enemySprite = new Image();
+        enemySprite.src = "img/creature.png";
+
+        const enemyAttackSprite = new Image();
+        enemyAttackSprite.src = "img/you fool.png";
 
         const keys = new Set();
         const bombs = [];
@@ -1073,16 +1082,28 @@
             ctx.save();
             ctx.translate(enemy.x, enemy.y);
             ctx.rotate(enemy.rotation || 0);
-            const gradient = ctx.createLinearGradient(-enemy.height * 0.5, 0, enemy.height * 0.5, 0);
-            gradient.addColorStop(0, "rgba(20, 24, 34, 0.95)");
-            gradient.addColorStop(0.5, "rgba(36, 40, 56, 0.95)");
-            gradient.addColorStop(1, "rgba(16, 20, 30, 0.95)");
-            ctx.fillStyle = gradient;
-            ctx.shadowColor = "rgba(61, 156, 255, 0.3)";
-            ctx.shadowBlur = 16;
-            ctx.beginPath();
-            ctx.roundRect(-enemy.width * 0.5, -enemy.height * 0.5, enemy.width, enemy.height, enemy.width * 0.35);
-            ctx.fill();
+
+            const currentSprite = (enemy.state !== "idle" && enemyAttackSprite.complete && enemyAttackSprite.naturalWidth !== 0) 
+                ? enemyAttackSprite 
+                : enemySprite;
+
+            if (currentSprite.complete && currentSprite.naturalWidth !== 0) {
+                ctx.shadowColor = "rgba(61, 156, 255, 0.3)";
+                ctx.shadowBlur = 16;
+                // Draw image centered, slightly larger than hitbox to look good
+                ctx.drawImage(currentSprite, -enemy.width * 1.2, -enemy.height * 0.6, enemy.width * 2.4, enemy.height * 1.2);
+            } else {
+                const gradient = ctx.createLinearGradient(-enemy.height * 0.5, 0, enemy.height * 0.5, 0);
+                gradient.addColorStop(0, "rgba(20, 24, 34, 0.95)");
+                gradient.addColorStop(0.5, "rgba(36, 40, 56, 0.95)");
+                gradient.addColorStop(1, "rgba(16, 20, 30, 0.95)");
+                ctx.fillStyle = gradient;
+                ctx.shadowColor = "rgba(61, 156, 255, 0.3)";
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.roundRect(-enemy.width * 0.5, -enemy.height * 0.5, enemy.width, enemy.height, enemy.width * 0.35);
+                ctx.fill();
+            }
 
                 const swing = Math.sin(enemy.clawSwing) * (enemy.state === "claw" ? 0.7 : 0.35);
                 const extension = enemy.clawLength * (1 + Math.min(0.6, enemy.clawExtended));
@@ -1113,24 +1134,35 @@
                 drawClaw(-1);
                 drawClaw(1);
 
-            ctx.fillStyle = "rgba(255, 120, 90, 0.85)";
-            ctx.beginPath();
-            ctx.ellipse(0, -enemy.height * 0.3, enemy.width * 0.3, enemy.width * 0.18, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (!(currentSprite.complete && currentSprite.naturalWidth !== 0)) {
+                ctx.fillStyle = "rgba(255, 120, 90, 0.85)";
+                ctx.beginPath();
+                ctx.ellipse(0, -enemy.height * 0.3, enemy.width * 0.3, enemy.width * 0.18, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             ctx.restore();
         }
 
         function drawPlayer() {
             ctx.save();
-            const gradient = ctx.createRadialGradient(player.x, player.y, 6, player.x, player.y, player.radius * 1.4);
-            gradient.addColorStop(0, "rgba(61, 156, 255, 0.95)");
-            gradient.addColorStop(1, "rgba(14, 22, 36, 0.2)");
-            ctx.fillStyle = gradient;
-            ctx.shadowColor = "rgba(61, 156, 255, 0.55)";
-            ctx.shadowBlur = 16;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fill();
+            
+            if (playerSprite.complete && playerSprite.naturalWidth !== 0) {
+                const size = player.radius * 2.8;
+                ctx.shadowColor = "rgba(61, 156, 255, 0.3)";
+                ctx.shadowBlur = 10;
+                ctx.drawImage(playerSprite, player.x - size / 2, player.y - size / 2, size, size);
+            } else {
+                const gradient = ctx.createRadialGradient(player.x, player.y, 6, player.x, player.y, player.radius * 1.4);
+                gradient.addColorStop(0, "rgba(61, 156, 255, 0.95)");
+                gradient.addColorStop(1, "rgba(14, 22, 36, 0.2)");
+                ctx.fillStyle = gradient;
+                ctx.shadowColor = "rgba(61, 156, 255, 0.55)";
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             if (player.invulnerable > 0) {
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
                 ctx.lineWidth = 3;
